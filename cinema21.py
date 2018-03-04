@@ -16,7 +16,6 @@ class Cinema21:
 
     def __init__(self, city=10):
         self.city_id = city
-        self.device_id = "universal7580"  # CPU/Chipset?
         self.uiid = self._generateUIID()
 
     def _getAuthKey(self):
@@ -37,7 +36,7 @@ class Cinema21:
             "manufacturer": "samsung",
             "brand": "samsung",
             "model": "SM-A310F",
-            "device_id": self.device_id,
+            "device_id": "universal7580",  # CPU/Chipset?
             "system_name": "Android",
             "system_version": "7.0",
             "bundle_id": "lds.cinema21",
@@ -161,6 +160,19 @@ class Cinema21:
         if result['status'] != 0:
             raise Cinema21Exception(result['message'])
         return Movie(**result['content'][0])
+
+    def free_seat(self, cinema_id, studio_id, date_show, time_show):
+        data = {
+            "request_type": "get_free_seat",
+            "cinema_id": cinema_id,
+            "studio_id": studio_id,
+            "date_show": date_show,
+            "time_show": time_show
+        }
+        result = self._post(data).json()
+        if result['status'] != 0:
+            raise Cinema21Exception(result['message'])
+        return result['total']
 
     def playing(self, city_id=None):
         data = {
