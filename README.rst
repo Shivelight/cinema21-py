@@ -1,16 +1,21 @@
 cinema21-py
 =======================
 
-.. image:: https://img.shields.io/pypi/v/cinema21.svg
-   :alt: PyPI
 
 .. image:: https://img.shields.io/pypi/status/cinema21.svg
+   :target: https://pypi.python.org/pypi/cinema21
    :alt: PyPI - Status
 
+.. image:: https://img.shields.io/pypi/v/cinema21.svg
+   :target: https://pypi.python.org/pypi/cinema21
+   :alt: PyPI - Version
+
 .. image:: https://img.shields.io/pypi/l/cinema21.svg
-   :alt: PyPI - License
+   :target: https://pypi.python.org/pypi/cinema21
+   :alt: PyPI - License
 
 .. image:: https://img.shields.io/pypi/pyversions/cinema21.svg
+   :target: https://pypi.python.org/pypi/cinema21
    :alt: PyPI - Python Version
 
 A simple wrapper for Cinema21 private API.
