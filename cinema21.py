@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+import hmac
 from random import choice
 from collections import namedtuple
 from uuid import uuid4
 from datetime import datetime
 from hashlib import md5
-import hmac
+
 import requests
 
 API = "https://mtix.21cineplex.com:2121"
@@ -14,9 +15,8 @@ HEADERS = {"Content-Type": "application/x-www-form-urlencoded"}
 
 class Cinema21:
 
-    def __init__(self, city=10):
-        self.city_id = city
-        self.uiid = self._generateUIID()
+    def __init__(self, uiid=None):
+        self.uiid = self._generateUIID() if uiid is None else uiid
 
     def _getAuthKey(self):
         randId = uuid4().hex.encode()
@@ -66,8 +66,7 @@ class Cinema21:
             "auth_key": self._getAuthKey(),  # Cache if hurt
             "device_uiid": self.uiid
         })
-        return requests.post(API, data=data,
-                             headers=HEADERS)
+        return requests.post(API, data=data, headers=HEADERS)
 
     def cities(self):
         data = {
@@ -79,10 +78,10 @@ class Cinema21:
         cities = [City(**content) for content in result['content']]
         return Cities(cities)
 
-    def city_cinemas(self, city_id=None):
+    def city_cinemas(self, city_id=10):
         data = {
             "request_type": "list_theater_by_city",
-            "city_id": self.city_id if city_id is None else city_id,
+            "city_id": city_id,
         }
         result = self._post(data).json()
         if result['status'] != 0:
@@ -101,10 +100,10 @@ class Cinema21:
         cinemas = [Cinema(**content) for content in result['content']]
         return Cinemas(imax=cinemas)
 
-    def movie_cinemas(self, movie_id, city_id=None):
+    def movie_cinemas(self, movie_id, city_id=10):
         data = {
             "request_type": "list_theater_by_movie",
-            "city_id": self.city_id if city_id is None else city_id,
+            "city_id": city_id,
             "movie_id": movie_id,
         }
         result = self._post(data).json()
@@ -136,10 +135,10 @@ class Cinema21:
                 premiere.append(Cinema(**content))
         return Cinemas(premiere, xxi, imax)
 
-    def movie_schedule(self, movie_id, city_id=None):
+    def movie_schedule(self, movie_id, city_id=10):
         data = {
             "request_type": "schedule_by_movie",
-            "city_id": self.city_id if city_id is None else city_id,
+            "city_id": city_id,
             "movie_id": movie_id,
         }
         result = self._post(data).json()
@@ -149,10 +148,10 @@ class Cinema21:
                        [Cinema(**content) for content in result['xxi']],
                        [Cinema(**content) for content in result['imax']])
 
-    def cinema_schedule(self, cinema_id, movie_id, city_id=None):
+    def cinema_schedule(self, cinema_id, movie_id, city_id=10):
         data = {
             "request_type": "schedule_by_cinema",
-            "city_id": self.city_id if city_id is None else city_id,
+            "city_id": city_id,
             "cinema_id": cinema_id,
             "movie_id": movie_id,
         }
@@ -174,10 +173,10 @@ class Cinema21:
             raise Cinema21Exception(result['message'])
         return result['total']
 
-    def playing(self, city_id=None):
+    def playing(self, city_id=10):
         data = {
             "request_type": "now_playing",
-            "city_id": self.city_id if city_id is None else city_id,
+            "city_id": city_id,
         }
         result = self._post(data).json()
         if result['status'] != 0:
@@ -185,10 +184,10 @@ class Cinema21:
         movies = [Movie(**content) for content in result['content']]
         return Movies(movies)
 
-    def upcoming(self, city_id=None):
+    def upcoming(self, city_id=10):
         data = {
             "request_type": "coming_soon",
-            "city_id": self.city_id if city_id is None else city_id,
+            "city_id": city_id,
         }
         result = self._post(data).json()
         if result['status'] != 0:
@@ -209,24 +208,22 @@ class Cinema21Exception(Exception):
     pass
 
 
-Cinema = namedtuple("Cinema", ["cinema_id", "type", "sub_type", "coordinate",
-                               "cinema_name", "is_mtix", "cinema_address"])
-Cinemas = namedtuple("Cinemas", ["premiere", "xxi", "imax"])
-City = namedtuple("City", ["city_id", "city_name"])
-Cities = namedtuple("Cities", "cities")
-Movie = namedtuple("Movie", ["age_limit", "can_buy", "director",
-                             "distributor", "duration", "genre", "is_ats",
-                             "is_mtix", "schedule", "movie_id", "movie_image",
-                             "movie_type", "player", "producer", "rating",
-                             "site", "synopsis", "title", "trailer", "writer"])
-Movies = namedtuple("Movies", "movies")
-# Schedule ... Shall we?
-Version = namedtuple("Version", "version")
+def _struct(typename, field_names):
+    STRUCT = namedtuple(typename, field_names)
+    STRUCT.__new__.__defaults__ = (None,) * len(STRUCT._fields)
+    return STRUCT
 
-Cinema.__new__.__defaults__ = (None,) * len(Cinema._fields)
-Cinemas.__new__.__defaults__ = (None,) * len(Cinemas._fields)
-City.__new__.__defaults__ = (None,) * len(City._fields)
-Cities.__new__.__defaults__ = (None,) * len(Cities._fields)
-Movie.__new__.__defaults__ = (None,) * len(Movie._fields)
-Movies.__new__.__defaults__ = (None,) * len(Movies._fields)
-Version.__new__.__defaults__ = (None,) * len(Version._fields)
+
+Cinema = _struct("Cinema", ["cinema_id", "type", "sub_type", "coordinate",
+                            "cinema_name", "is_mtix", "cinema_address"])
+Cinemas = _struct("Cinemas", ["premiere", "xxi", "imax"])
+City = _struct("City", ["city_id", "city_name"])
+Cities = _struct("Cities", "cities")
+Movie = _struct("Movie", ["age_limit", "can_buy", "director",
+                          "distributor", "duration", "genre", "is_ats",
+                          "is_mtix", "schedule", "movie_id", "movie_image",
+                          "movie_type", "player", "producer", "rating",
+                          "site", "synopsis", "title", "trailer", "writer"])
+Movies = _struct("Movies", "movies")
+# Schedule ... Shall we?
+Version = _struct("Version", "version")
