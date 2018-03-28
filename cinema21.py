@@ -13,7 +13,7 @@ WEB = "https://mtix.21cineplex.com"
 HEADERS = {"Content-Type": "application/x-www-form-urlencoded"}
 
 
-class Cinema21:
+class Cinema21(object):
 
     def __init__(self, uiid=None):
         self.uiid = self._generateUIID() if uiid is None else uiid
@@ -127,11 +127,11 @@ class Cinema21:
         imax = []           # type: 2, sub_type: 1
         # can't really rely on this
         for content in result['content']:
-            if content.type == 2 and content.sub_type == 0:
+            if content['type'] == 2 and content['sub_type'] == 0:
                 xxi.append(Cinema(**content))
-            elif content.type == 2 and content.sub_type == 1:
+            elif content['type'] == 2 and content['sub_type'] == 1:
                 imax.append(Cinema(**content))
-            elif content.type == 4:
+            elif content['type'] == 4:
                 premiere.append(Cinema(**content))
         return Cinemas(premiere, xxi, imax)
 
