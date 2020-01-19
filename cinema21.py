@@ -25,8 +25,8 @@ class Cinema21(object):
         date = datetime.today()
         date = "{:02d}{:02d}{:02d}".format(date.day, date.month, date.year)
         c_hex = md5(date.encode()).hexdigest()
-        a_hmac = hmac.new(a_hex.encode(), b_hex.encode()).hexdigest()
-        b_hmac = hmac.new(a_hmac.encode(), self.uiid).hexdigest()
+        a_hmac = hmac.new(a_hex.encode(), b_hex.encode(), 'md5').hexdigest()
+        b_hmac = hmac.new(a_hmac.encode(), self.uiid, 'md5').hexdigest()
         return a_hex.upper() + b_hmac.upper() + c_hex.upper()
 
     def _getDeviceInfo(self):
@@ -57,8 +57,8 @@ class Cinema21(object):
     def _generateUIID(self):
         uuid_ = ""
         seed = "1234567890asdfghjklzxcvbnmqwertyuiop"
-        for x in range(16):
-                uuid_ += choice(seed)
+        for _ in range(16):
+            uuid_ += choice(seed)
         return uuid_.encode()
 
     def _post(self, data):
